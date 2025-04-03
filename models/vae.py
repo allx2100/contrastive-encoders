@@ -13,7 +13,7 @@ class VAE(nn.Module):
         encoder_layers = []
         in_channels = input_channels
         for ch in channels:
-            encoder_layers.append(nn.Conv2d(in_channels, ch, kernel_size=4, stride=2, padding=1))
+            encoder_layers.append(nn.Conv2d(in_channels, out_channels=ch, kernel_size=4, stride=2, padding=1))
             encoder_layers.append(nn.ReLU())
             in_channels = ch
         self.encoder = nn.Sequential(*encoder_layers)
@@ -60,9 +60,18 @@ class VAE(nn.Module):
         mu, logvar = self.encode(x)
         z = self.reparameterize(mu, logvar)
         x_recon = self.decode(z)
-        return x_recon, mu, logvar
+        return x_recon, x, mu, logvar
 
-    def loss_function(self, x_recon, x, mu, logvar):
-        recon_loss = F.mse_loss(x_recon, x, reduction='sum')
-        kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-        return recon_loss + self.kld_weight * kld, recon_loss, kld
+    def loss_function(self, args):
+        x_recon = args[0]
+        x = args[1]
+        mu = args[2]
+        logvar = args[3]
+
+        batch_size = x.size(0)
+
+        recon_loss = F.mse_loss(x_recon, x, reduction='mean')
+        kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()) / batch_size
+        total_loss = recon_loss + self.kld_weight * kld
+        
+        return total_loss, recon_loss, kld
