@@ -4,7 +4,7 @@ contrastive_encoders.egg-info/
 
 # data
 data/cifar-data/
-data/data_loaders.pkl
+data/cifar_data_loaders.pkl
 
 # pycache
 __pycache__
