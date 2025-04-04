@@ -21,8 +21,8 @@ class VAE(nn.Module):
         conv_out_size = image_size // (2 ** len(channels))
         self.flatten_dim = channels[-1] * conv_out_size * conv_out_size
 
-        self.fc_mu = nn.Linear(self.flatten_dim, latent_dims)
-        self.fc_logvar = nn.Linear(self.flatten_dim, latent_dims)
+        self.mu = nn.Linear(self.flatten_dim, latent_dims)
+        self.logvar = nn.Linear(self.flatten_dim, latent_dims)
 
         self.decoder_input = nn.Linear(latent_dims, self.flatten_dim)
 
@@ -42,8 +42,8 @@ class VAE(nn.Module):
     def encode(self, x):
         x = self.encoder(x)
         x = x.view(x.size(0), -1)
-        mu = self.fc_mu(x)
-        logvar = self.fc_logvar(x)
+        mu = self.mu(x)
+        logvar = self.logvar(x)
         return mu, logvar
 
     def reparameterize(self, mu, logvar):
