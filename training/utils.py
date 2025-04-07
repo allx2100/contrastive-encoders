@@ -35,6 +35,41 @@ def train_vae(data_loader, model, loss_fn, optimizer, train_loss, recon_loss, kl
     return running_loss / size
 
 
+def train_swae(data_loader, model, loss_fn, optimizer, train_loss, recon_loss, swd_list):
+    size = len(data_loader.dataset)
+    batch_size = data_loader.batch_size
+    running_loss = 0.0
+    running_recon = 0.0
+    running_swd = 0.0
+
+    model.train()
+    for i, data in enumerate(data_loader):
+        inputs, _ = data
+
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        x_recon, z = outputs
+
+        total_loss = loss_fn(x_recon, inputs, z)
+        loss = total_loss[0]
+        r_loss = total_loss[1]
+        SWD = total_loss[2]
+
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
+        optimizer.step()
+        running_loss += loss.item()
+        running_recon += r_loss.item()
+        running_swd += SWD.item()
+
+    train_loss.append(running_loss / size * batch_size)
+    recon_loss.append(running_recon / size * batch_size)
+    swd_list.append(running_swd / size * batch_size)
+
+    return running_loss / size
+
+
 def validate(data_loader, model, loss_fn, val_loss):
     running_vloss = 0
     size = len(data_loader.dataset)
@@ -45,7 +80,12 @@ def validate(data_loader, model, loss_fn, val_loss):
         for i, vdata in enumerate(data_loader):
             vinputs, _ = vdata
             voutputs = model(vinputs)
-            vloss = loss_fn(voutputs)[0]
+            if model.__class__.__name__ == "SWAE":
+                x_recon, z = voutputs
+                vloss = loss_fn(x_recon, vinputs, z)[0]
+            else:
+                voutputs = model(vinputs)
+                vloss = loss_fn(voutputs)[0]
             running_vloss += vloss.item()
 
     val_loss.append(running_vloss / size * batch_size)
