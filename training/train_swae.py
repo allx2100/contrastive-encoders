@@ -30,7 +30,7 @@ def main():
     val_loss = []
 
     print("Epoch\tTrain Loss\tRecon Loss\tSWD Loss\tVal Loss")
-    for i in range(2):
+    for i in range(300):
         train_swae(train_loader, model, loss_fn,
                    optimizer, train_loss, recon_loss, swd)
         validate(val_loader, model, loss_fn, val_loss)
