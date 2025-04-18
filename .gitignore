@@ -1,0 +1,19 @@
+# env
+contrastive-encoders/
+contrastive_encoders.egg-info/
+
+# data
+data/cifar-data/
+data/cifar_data_loaders.pkl
+data/contrastive_cifar_data_loaders.pkl
+data/mnist-data
+data/contrastive_mnist_data_loaders.pkl
+data/mnist_data_loaders.pkl
+
+# pycache
+__pycache__
+
+# saved models
+saved_models/
+
+.DS_Store
